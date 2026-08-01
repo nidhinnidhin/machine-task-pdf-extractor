@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+:root {
+  --background: #030014;
+  --foreground: #f8fafc;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Custom CSS Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes float-delayed {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(12px);
+  }
+}
+
+@keyframes aurora-1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    filter: blur(80px);
+  }
+  33% {
+    transform: translate(40px, -60px) scale(1.15);
+    filter: blur(100px);
+  }
+  66% {
+    transform: translate(-30px, 30px) scale(0.9);
+    filter: blur(70px);
+  }
+}
+
+@keyframes aurora-2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    filter: blur(90px);
+  }
+  33% {
+    transform: translate(-50px, 40px) scale(0.85);
+    filter: blur(70px);
+  }
+  66% {
+    transform: translate(40px, -30px) scale(1.2);
+    filter: blur(110px);
+  }
+}
+
+@keyframes aurora-3 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    filter: blur(70px);
+  }
+  33% {
+    transform: translate(30px, 50px) scale(1.1);
+    filter: blur(90px);
+  }
+  66% {
+    transform: translate(-40px, -40px) scale(0.95);
+    filter: blur(80px);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+@keyframes border-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
+}
+
+.animate-aurora-1 {
+  animation: aurora-1 14s ease-in-out infinite;
+}
+
+.animate-aurora-2 {
+  animation: aurora-2 18s ease-in-out infinite;
+}
+
+.animate-aurora-3 {
+  animation: aurora-3 22s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 35s linear infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 5s ease-in-out infinite;
+}
+
+.animate-border-shimmer {
+  background-size: 200% 200%;
+  animation: border-shimmer 4s linear infinite;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
