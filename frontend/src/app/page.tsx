@@ -1,22 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { AuthActions } from "@/actions/auth.action";
+import { PublicOnlyRoute } from "@/components/guards";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
 
+  // Reset loading state on mount — handles bfcache restoring isLoading=true
+  // from when the user clicked the Google login button before being redirected
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
+
   const handleGoogleLogin = () => {
     setIsLoading(true);
-    // Simulate redirect delay to show loading state
-    setTimeout(() => {
-      setIsLoading(false);
-      // In a real application, this is where OAuth redirect happens:
-      // window.location.href = "https://accounts.google.com/o/oauth2/v2/auth?...";
-    }, 2000);
+    AuthActions.initiateGoogleLogin();
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#030014] text-slate-100 flex flex-col md:flex-row relative overflow-hidden font-sans">
+    <PublicOnlyRoute>
+      <div className="min-h-screen w-full bg-[#030014] text-slate-100 flex flex-col md:flex-row relative overflow-hidden font-sans">
       {/* Background Ambient Glowing Auroras */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[120px] animate-aurora-1 pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-cyan-500/10 blur-[130px] animate-aurora-2 pointer-events-none" />
@@ -322,5 +326,6 @@ export default function Home() {
         </div>
       </div>
     </div>
-  );
+  </PublicOnlyRoute>
+);
 }
