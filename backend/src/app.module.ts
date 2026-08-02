@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/presentation/auth.module';
+import { PdfModule } from './modules/pdf/presentation/pdf.module';
 
 @Module({
   imports: [
@@ -9,6 +10,7 @@ import { AuthModule } from './modules/auth/presentation/auth.module';
       envFilePath: '.env',
     }),
     AuthModule,
+    PdfModule,
   ],
   controllers: [],
   providers: [],

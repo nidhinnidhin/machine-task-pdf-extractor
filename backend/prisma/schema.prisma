@@ -19,15 +19,33 @@ enum UserRole {
 // ─── Models ──────────────────────────────────────────────────────────────────
 
 model User {
-  id           String   @id @default(uuid())
-  googleId     String   @unique
-  email        String   @unique
+  id           String        @id @default(uuid())
+  googleId     String        @unique
+  email        String        @unique
   name         String
   avatar       String?
   refreshToken String?
-  role         UserRole @default(USER)
+  role         UserRole      @default(USER)
+  pdfDocuments PdfDocument[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("users")
+}
+
+model PdfDocument {
+  id           String   @id @default(uuid())
+  userId       String
+  filename     String
+  originalName String
+  filePath     String
+  fileSize     Int
+  pageCount    Int
+  isGenerated  Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  @@map("users")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("pdf_documents")
 }
