@@ -7,7 +7,7 @@ import type { IStorageService } from '../../application/interfaces/storage-servi
 export class DiskStorageService implements IStorageService {
   private readonly _uploadDir = path.resolve('uploads');
 
-  async save(key: string, file: Buffer, mimetype?: string): Promise<string> {
+  async save(key: string, file: Buffer): Promise<string> {
     const filePath = path.join(this._uploadDir, key);
     // Ensure the uploads directory exists
     await fs.mkdir(this._uploadDir, { recursive: true });

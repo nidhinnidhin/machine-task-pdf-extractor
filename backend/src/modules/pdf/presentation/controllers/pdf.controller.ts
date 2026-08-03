@@ -126,9 +126,14 @@ export class PdfController {
 
     const fileBuffer = await this._storageService.get(pdf.filePath);
 
+    // Ensure the filename always ends with .pdf so browsers treat it correctly
+    const downloadFilename = pdf.originalName.endsWith('.pdf')
+      ? pdf.originalName
+      : `${pdf.originalName}.pdf`;
+
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="${encodeURIComponent(pdf.originalName)}"`,
+      'Content-Disposition': `attachment; filename="${encodeURIComponent(downloadFilename)}"`,
     });
 
     return new StreamableFile(fileBuffer);

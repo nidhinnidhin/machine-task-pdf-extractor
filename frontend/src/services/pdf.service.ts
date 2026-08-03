@@ -40,4 +40,11 @@ export class PdfService {
       apiClient.post<ApiResponse<PdfDocument>>(API_ENDPOINTS.PDF.EXTRACT(id), { pages })
     );
   }
+
+  static async fetchBuffer(id: string): Promise<ArrayBuffer> {
+    const response = await apiClient.get<ArrayBuffer>(API_ENDPOINTS.PDF.DOWNLOAD(id), {
+      responseType: 'arraybuffer',
+    });
+    return response.data;
+  }
 }

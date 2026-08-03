@@ -8,7 +8,7 @@ import { PdfController } from './controllers/pdf.controller';
 import { PdfLibService } from '../infrastructure/services/pdf-lib.service';
 import { PrismaPdfDocumentRepository } from '../infrastructure/database/repositories/prisma-pdf-document.repository';
 import { DiskStorageService } from '../infrastructure/services/disk-storage.service';
-import { S3StorageService } from '../infrastructure/services/s3-storage.service';
+import { CloudinaryStorageService } from '../infrastructure/services/cloudinary-storage.service';
 
 // ─── Application: Use Cases ────────────────────────────────────────────────
 import { UploadPdfUseCase } from '../application/use-cases/upload-pdf.usecase';
@@ -27,8 +27,8 @@ import { ExtractPagesUseCase } from '../application/use-cases/extract-pages.usec
       provide: 'IStorageService',
       useFactory: (configService: ConfigService) => {
         const provider = configService.get<string>('STORAGE_PROVIDER');
-        return provider === 's3'
-          ? new S3StorageService(configService)
+        return provider === 'cloudinary'
+          ? new CloudinaryStorageService(configService)
           : new DiskStorageService();
       },
       inject: [ConfigService],

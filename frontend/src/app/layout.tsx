@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Antigravity - Task Boarding",
+  title: "Pdf extractor - Task Boarding",
   description: "Secure, high-performance task onboarding pipelines.",
 };
 
