@@ -113,7 +113,7 @@ export class AuthController {
         avatar: user.avatar,
         role: user.role,
         createdAt: user.createdAt,
-      },
+    },
       AUTH_MESSAGES.PROFILE_FETCHED,
     );
   }
