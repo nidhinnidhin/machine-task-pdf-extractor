@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 // Routes accessible only when NOT authenticated
 const PUBLIC_ONLY_ROUTES: string[] = ['/'];
 
-// Routes that are always public (skip all middleware guards)
+// Routes that are always public (skip all middleware guardsdsd)
 const ALWAYS_PUBLIC_ROUTES: string[] = ['/auth/callback'];
 
 // Routes accessible only when authenticated
