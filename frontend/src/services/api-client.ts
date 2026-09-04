@@ -82,9 +82,14 @@ apiClient.interceptors.response.use(
         // In cross-domain production, the refresh_token cookie (set on Vercel)
         // won't be sent automatically to the AWS backend. Read it from
         // document.cookie and pass it as "Authorization: Bearer <token>".
-        // The request interceptor above handles access_token automatically;
-        // here we override with the refresh token specifically for this call.
         const refreshToken = getCookieValue('refresh_token');
+        
+        // Prevent the secondary 401 network error if we know we don't have a token
+        const isCrossDomain = typeof window !== 'undefined' && !API_BASE_URL.startsWith(window.location.origin) && !API_BASE_URL.startsWith('/');
+        if (isCrossDomain && !refreshToken) {
+          throw new AxiosError('No refresh token available', '401');
+        }
+
         const refreshHeaders: Record<string, string> = {};
         if (refreshToken) {
           refreshHeaders['Authorization'] = `Bearer ${refreshToken}`;
