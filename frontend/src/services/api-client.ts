@@ -30,8 +30,8 @@ const processQueue = (error: AxiosError | null) => {
 
 /**
  * Reads a cookie value by name from document.cookie.
- * Used to retrieve the refresh_token in cross-domain production deployments
- * where the cookie lives on the Vercel domain and needs to be sent explicitly
+ * Used to retrieve tokens in cross-domain production deployments
+ * where cookies live on the Vercel domain and need to be sent explicitly
  * to the AWS backend (different domain).
  */
 function getCookieValue(name: string): string | null {
@@ -42,6 +42,25 @@ function getCookieValue(name: string): string | null {
   return match ? decodeURIComponent(match.split('=')[1]) : null;
 }
 
+// ── Request interceptor ────────────────────────────────────────────────────
+// In cross-domain production deployments, the browser does NOT send Vercel
+// cookies to the AWS backend automatically. We read the access_token from
+// document.cookie and attach it as "Authorization: Bearer <token>" on every
+// outgoing API request so the backend JWT strategy can authenticate the user.
+// On localhost, access_token is httpOnly so getCookieValue returns null and
+// the cookie is sent automatically via withCredentials — no change in behaviour.
+apiClient.interceptors.request.use(
+  (config) => {
+    const accessToken = getCookieValue('access_token');
+    if (accessToken && !config.headers['Authorization']) {
+      config.headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// ── Response interceptor (token refresh on 401) ───────────────────────────
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -60,10 +79,11 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // In cross-domain production deployments, the refresh_token cookie
-        // (set on Vercel) won't be sent automatically to the AWS backend.
-        // We read it from document.cookie and pass it as a Bearer token
-        // in the Authorization header.
+        // In cross-domain production, the refresh_token cookie (set on Vercel)
+        // won't be sent automatically to the AWS backend. Read it from
+        // document.cookie and pass it as "Authorization: Bearer <token>".
+        // The request interceptor above handles access_token automatically;
+        // here we override with the refresh token specifically for this call.
         const refreshToken = getCookieValue('refresh_token');
         const refreshHeaders: Record<string, string> = {};
         if (refreshToken) {
