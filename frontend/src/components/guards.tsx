@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 
 interface RouteGuardProps {
@@ -35,39 +36,50 @@ const SessionLoader: React.FC = () => (
 );
 
 // ─── ProtectedRoute ────────────────────────────────────────────────────────────
-// Middleware already blocks unauthenticated access to this route.
-// This guard just blocks back-button traversal through Google OAuth history
-// and shows a loading state while the user profile is being fetched for the UI.
+// Guards authenticated routes. If loading is done and user is not authenticated,
+// redirects to the login page. Middleware handles this for server-side nav,
+// but this guard catches bfcache restores and client-side token expiry.
 export const ProtectedRoute: React.FC<RouteGuardProps> = ({ children }) => {
-  const { loading } = useAuth();
+  const { loading, isAuthenticated } = useAuth();
+  const router = useRouter();
 
-  // Prevent browser back-button from navigating into Google OAuth history pages.
-  // Each time popstate fires (back pressed), we push the current URL again.
   useEffect(() => {
-    window.history.pushState(null, "", window.location.href);
+    if (!loading && !isAuthenticated) {
+      // User is not authenticated — send to login page
+      router.replace("/");
+    }
+  }, [loading, isAuthenticated, router]);
 
-    const handlePopState = () => {
-      window.history.pushState(null, "", window.location.href);
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
-
+  // Show loader while session is being checked
   if (loading) return <SessionLoader />;
+
+  // If not authenticated, render nothing while the redirect happens
+  if (!isAuthenticated) return <SessionLoader />;
 
   return <>{children}</>;
 };
 
 // ─── PublicOnlyRoute ───────────────────────────────────────────────────────────
-// Middleware already blocks authenticated users from this route.
-// This guard only shows a loading state while the initial session check runs.
+// Guards the login page. If the user is already authenticated (e.g. back button
+// after login, bfcache restore), redirects them to the dashboard immediately.
+// This is the critical fix for the "back button returns to login" bug.
 export const PublicOnlyRoute: React.FC<RouteGuardProps> = ({ children }) => {
-  const { loading } = useAuth();
+  const { loading, isAuthenticated } = useAuth();
+  const router = useRouter();
 
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      // User is already logged in — push them to dashboard and replace history
+      // so pressing back again does NOT return to login page.
+      router.replace("/dashboard");
+    }
+  }, [loading, isAuthenticated, router]);
+
+  // Show loader while session is being checked
   if (loading) return <SessionLoader />;
+
+  // If authenticated, render nothing while the redirect is happening
+  if (isAuthenticated) return <SessionLoader />;
 
   return <>{children}</>;
 };
