@@ -28,6 +28,20 @@ const processQueue = (error: AxiosError | null) => {
   failedQueue = [];
 };
 
+/**
+ * Reads a cookie value by name from document.cookie.
+ * Used to retrieve the refresh_token in cross-domain production deployments
+ * where the cookie lives on the Vercel domain and needs to be sent explicitly
+ * to the AWS backend (different domain).
+ */
+function getCookieValue(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith(`${name}=`));
+  return match ? decodeURIComponent(match.split('=')[1]) : null;
+}
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -46,7 +60,16 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await apiClient.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN);
+        // In cross-domain production deployments, the refresh_token cookie
+        // (set on Vercel) won't be sent automatically to the AWS backend.
+        // We read it from document.cookie and pass it as a Bearer token
+        // in the Authorization header.
+        const refreshToken = getCookieValue('refresh_token');
+        const refreshHeaders: Record<string, string> = {};
+        if (refreshToken) {
+          refreshHeaders['Authorization'] = `Bearer ${refreshToken}`;
+        }
+        await apiClient.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {}, { headers: refreshHeaders });
         processQueue(null);
         return apiClient(originalRequest);
       } catch (refreshError) {

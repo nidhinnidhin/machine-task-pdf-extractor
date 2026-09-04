@@ -60,11 +60,27 @@ export class AuthController {
   ): Promise<void> {
     const { accessToken, refreshToken } = await this._googleLoginUseCase.execute(req.user);
 
-    this._cookieService.setAccessToken(res, accessToken);
-    this._cookieService.setRefreshToken(res, refreshToken);
+    // In production the frontend (Vercel) and backend (AWS) are on different
+    // domains, so httpOnly cookies set here cannot be read by the frontend.
+    // Instead we redirect to a frontend /auth/callback page that receives the
+    // tokens as URL search params and sets its own cookies on the Vercel domain.
+    // The refresh token is also passed so the frontend can store it securely.
+    const frontendUrl = this._configService.get<string>('FRONTEND_URL') ?? 'http://localhost:3000';
+    const isProduction = this._configService.get<string>('NODE_ENV') === 'production';
 
-    const clientRedirectUrl = this._configService.get<string>('CLIENT_REDIRECT_URL') ?? 'http://localhost:3000/dashboard';
-    res.redirect(clientRedirectUrl);
+    if (isProduction) {
+      // Cross-domain: pass tokens via URL params to the frontend callback page.
+      // The frontend will set its own cookies and then redirect to /dashboard.
+      const callbackUrl = new URL(`${frontendUrl}/auth/callback`);
+      callbackUrl.searchParams.set('access_token', accessToken);
+      callbackUrl.searchParams.set('refresh_token', refreshToken);
+      res.redirect(callbackUrl.toString());
+    } else {
+      // Same domain (localhost): httpOnly cookies work fine.
+      this._cookieService.setAccessToken(res, accessToken);
+      this._cookieService.setRefreshToken(res, refreshToken);
+      res.redirect(`${frontendUrl}/dashboard`);
+    }
   }
 
   // ─── POST /auth/refresh ───────────────────────────────────────────────────

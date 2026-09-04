@@ -4,11 +4,19 @@ import type { NextRequest } from 'next/server';
 // Routes accessible only when NOT authenticated
 const PUBLIC_ONLY_ROUTES: string[] = ['/'];
 
+// Routes that are always public (skip all middleware guards)
+const ALWAYS_PUBLIC_ROUTES: string[] = ['/auth/callback'];
+
 // Routes accessible only when authenticated
 const PROTECTED_ROUTES: string[] = ['/dashboard'];
 
 export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
+
+  // Always-public routes (e.g. OAuth callback) — skip all guards
+  if (ALWAYS_PUBLIC_ROUTES.some((route) => pathname.startsWith(route))) {
+    return NextResponse.next();
+  }
 
   // Check cookie presence — the access_token cookie is on the localhost domain
   // so it's readable by middleware even though it's set by localhost:4000
@@ -30,5 +38,5 @@ export function middleware(request: NextRequest): NextResponse {
 
 export const config = {
   // Only run middleware on these paths — skip _next, static, api, favicon etc.
-  matcher: ['/', '/dashboard/:path*'],
+  matcher: ['/', '/dashboard/:path*', '/auth/callback'],
 };
