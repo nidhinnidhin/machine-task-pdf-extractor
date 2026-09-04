@@ -44,7 +44,7 @@ export class AuthController {
     private readonly _configService: ConfigService,
   ) {}
 
-  // ─── GET /auth/google ─────────────────────────────────────────────────────
+  // ─── GET /auth/googleee ─────────────────────────────────────────────────────
   @Get('google')
   @UseGuards(AuthGuard('google'))
   initiateGoogleLogin(): void {
