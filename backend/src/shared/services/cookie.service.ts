@@ -12,7 +12,11 @@ export class CookieService implements ICookieService {
   }
 
   private get _cookieDomain(): string | undefined {
-    return this._isProduction ? '.nidhintech.site' : undefined;
+    const frontendUrl = this._configService.get<string>('FRONTEND_URL') || '';
+    if (frontendUrl.includes('nidhintech.site')) {
+      return '.nidhintech.site';
+    }
+    return undefined; // Localhost
   }
 
   setAccessToken(res: Response, token: string): void {
