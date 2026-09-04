@@ -11,12 +11,17 @@ export class CookieService implements ICookieService {
     this._isProduction = this._configService.get<string>('NODE_ENV') === 'production';
   }
 
+  private get _cookieDomain(): string | undefined {
+    return this._isProduction ? '.nidhintech.site' : undefined;
+  }
+
   setAccessToken(res: Response, token: string): void {
     const expiresIn = this._configService.get<string>('JWT_ACCESS_EXPIRES_IN') ?? '15m';
     res.cookie('access_token', token, {
       httpOnly: true,
       secure: this._isProduction,
-      sameSite: this._isProduction ? 'none' : 'lax',
+      sameSite: 'lax',
+      domain: this._cookieDomain,
       maxAge: this._parseDurationToMs(expiresIn),
     });
   }
@@ -26,15 +31,16 @@ export class CookieService implements ICookieService {
     res.cookie('refresh_token', token, {
       httpOnly: true,
       secure: this._isProduction,
-      sameSite: this._isProduction ? 'none' : 'lax',
+      sameSite: 'lax',
+      domain: this._cookieDomain,
       maxAge: this._parseDurationToMs(expiresIn),
       path: '/auth/refresh',
     });
   }
 
   clearTokens(res: Response): void {
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token', { path: '/auth/refresh' });
+    res.clearCookie('access_token', { domain: this._cookieDomain });
+    res.clearCookie('refresh_token', { path: '/auth/refresh', domain: this._cookieDomain });
   }
 
   private _parseDurationToMs(duration: string): number {

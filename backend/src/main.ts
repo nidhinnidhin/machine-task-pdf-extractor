@@ -19,13 +19,17 @@ async function bootstrap() {
   );
 
   // ─── CORS ─────────────────────────────────────────────────────────────────
-  const frontendUrl = process.env['FRONTEND_URL'] ?? 'http://localhost:3000';
+  const allowedOrigins = [
+    process.env['FRONTEND_URL'] ?? 'http://localhost:3000',
+    'http://localhost:3000',
+  ];
+
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin || origin.startsWith(frontendUrl) || origin === 'http://localhost:3000') {
+      if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(null, true); // Fallback allow in dev
+        callback(new Error('Not allowed by CORS'), false);
       }
     },
     credentials: true,
@@ -38,4 +42,3 @@ bootstrap().catch((err: unknown) => {
   console.error(err);
   process.exit(1);
 });
-
